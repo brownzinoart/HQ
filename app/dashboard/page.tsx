@@ -67,6 +67,19 @@ export default function DashboardPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'dashboard' | 'kanban' | 'contacts'>('dashboard');
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  const handleViewModeChange = (newMode: 'dashboard' | 'kanban' | 'contacts') => {
+    if (newMode === viewMode) return;
+    
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setViewMode(newMode);
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 50);
+    }, 150);
+  };
 
   const getActivityTypeColor = (type: string) => {
     switch (type) {
@@ -153,7 +166,6 @@ export default function DashboardPage() {
 
       if (response.ok) {
         const updatedProject = await response.json();
-        // Update the local projects state
         setProjects(prev => 
           prev.map(p => p.id === projectId ? updatedProject : p)
         );
@@ -321,8 +333,8 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* Hero Metrics - Moved to Top */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Hero Metrics */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div className="metric-card text-center hover-lift group">
               <div className="relative z-10">
                 <div className="text-4xl font-bold text-primary-600 mb-2 group-hover:scale-110 transition-transform duration-300">
@@ -338,7 +350,7 @@ export default function DashboardPage() {
                   {contacts.length}
                 </div>
                 <div className="text-slate-600 font-medium">Contacts</div>
-                <div className="mt-2 text-xs text-slate-400">Total managed</div>
+                <div className="mt-2 text-xs text-slate-400">In network</div>
               </div>
             </div>
             <div className="metric-card text-center hover-lift group">
@@ -361,249 +373,311 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* View Mode Toggle */}
-          <div className="flex justify-end mb-6">
-            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-1 shadow-sm border border-slate-200">
-              <button
-                onClick={() => setViewMode('dashboard')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  viewMode === 'dashboard' 
-                    ? 'bg-primary-600 text-white shadow-sm' 
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                Dashboard View
-              </button>
-              <button
-                onClick={() => setViewMode('kanban')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ml-1 ${
-                  viewMode === 'kanban' 
-                    ? 'bg-primary-600 text-white shadow-sm' 
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                Kanban View
-              </button>
-              <button
-                onClick={() => setViewMode('contacts')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ml-1 ${
-                  viewMode === 'contacts' 
-                    ? 'bg-primary-600 text-white shadow-sm' 
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                Contacts View
-              </button>
+          {/* Enhanced Tabbed Navigation */}
+          <div className="mb-8 px-2 sm:px-0">
+            <div className="glass rounded-2xl p-2 max-w-4xl mx-auto shadow-lg border border-white/20">
+              <div className="flex items-center justify-center">
+                <div className="grid grid-cols-3 w-full gap-1 sm:gap-2">
+                  <button
+                    onClick={() => handleViewModeChange('dashboard')}
+                    className={`relative px-3 sm:px-6 py-3 sm:py-4 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 hover-lift group ${
+                      viewMode === 'dashboard' 
+                        ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg scale-105' 
+                        : 'text-slate-600 hover:text-slate-800 hover:bg-white/40'
+                    }`}
+                    disabled={isTransitioning}
+                  >
+                    <div className="relative z-10 flex items-center justify-center space-x-1 sm:space-x-2">
+                      <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all duration-300 ${
+                        viewMode === 'dashboard' 
+                          ? 'bg-white shadow-sm' 
+                          : 'bg-primary-400 group-hover:bg-primary-500'
+                      }`}></div>
+                      <span className="hidden xs:inline">Dashboard</span>
+                      <span className="xs:hidden">Board</span>
+                    </div>
+                    {viewMode === 'dashboard' && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary-400/20 to-secondary-400/20 rounded-xl animate-fadeIn"></div>
+                    )}
+                  </button>
+                  
+                  <button
+                    onClick={() => handleViewModeChange('kanban')}
+                    className={`relative px-3 sm:px-6 py-3 sm:py-4 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 hover-lift group ${
+                      viewMode === 'kanban' 
+                        ? 'bg-gradient-to-r from-secondary-500 to-secondary-600 text-white shadow-lg scale-105' 
+                        : 'text-slate-600 hover:text-slate-800 hover:bg-white/40'
+                    }`}
+                    disabled={isTransitioning}
+                  >
+                    <div className="relative z-10 flex items-center justify-center space-x-1 sm:space-x-2">
+                      <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all duration-300 ${
+                        viewMode === 'kanban' 
+                          ? 'bg-white shadow-sm' 
+                          : 'bg-secondary-400 group-hover:bg-secondary-500'
+                      }`}></div>
+                      <span>Kanban</span>
+                    </div>
+                    {viewMode === 'kanban' && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-secondary-400/20 to-primary-400/20 rounded-xl animate-fadeIn"></div>
+                    )}
+                  </button>
+                  
+                  <button
+                    onClick={() => handleViewModeChange('contacts')}
+                    className={`relative px-3 sm:px-6 py-3 sm:py-4 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 hover-lift group ${
+                      viewMode === 'contacts' 
+                        ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg scale-105' 
+                        : 'text-slate-600 hover:text-slate-800 hover:bg-white/40'
+                    }`}
+                    disabled={isTransitioning}
+                  >
+                    <div className="relative z-10 flex items-center justify-center space-x-1 sm:space-x-2">
+                      <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all duration-300 ${
+                        viewMode === 'contacts' 
+                          ? 'bg-white shadow-sm' 
+                          : 'bg-blue-400 group-hover:bg-blue-500'
+                      }`}></div>
+                      <span>Contacts</span>
+                    </div>
+                    {viewMode === 'contacts' && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-secondary-400/20 rounded-xl animate-fadeIn"></div>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            {/* View Mode Indicator */}
+            <div className="text-center mt-4 px-4">
+              <p className="text-xs sm:text-sm text-slate-500 font-medium max-w-lg mx-auto">
+                {viewMode === 'dashboard' && "Comprehensive overview with activity feed, contacts, and projects"}
+                {viewMode === 'kanban' && "Visual project management with drag-and-drop boards"}
+                {viewMode === 'contacts' && "Detailed contact management and relationship tracking"}
+              </p>
             </div>
           </div>
 
-          {/* Extended Vertical Layout - Activity Feed Prominent */}
+          {/* View Content */}
           <div className="relative overflow-hidden">
-            {viewMode === 'dashboard' ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6 lg:gap-8 min-h-[calc(100vh-400px)] animate-fadeIn">
-            {/* Left Column - Contacts */}
-            <div className="lg:col-span-3 card flex flex-col h-full">
-              <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
-                <h2 className="text-xl font-bold text-slate-900 flex items-center">
-                  <div className="w-4 h-4 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full mr-3 shadow-sm"></div>
-                  Contacts
-                </h2>
-                <span className="text-sm bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-1.5 rounded-full font-semibold shadow-sm">
-                  {contacts.length}
-                </span>
+            {/* Transition Loading State */}
+            {isTransitioning && (
+              <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/60 backdrop-blur-sm rounded-2xl">
+                <div className="flex items-center space-x-3">
+                  <div className="w-4 h-4 bg-primary-500 rounded-full animate-pulse"></div>
+                  <div className="w-4 h-4 bg-secondary-500 rounded-full animate-pulse animation-delay-100"></div>
+                  <div className="w-4 h-4 bg-blue-500 rounded-full animate-pulse animation-delay-200"></div>
+                </div>
               </div>
-              <div className="flex-1 space-y-4 scroll-area overflow-y-auto max-h-[600px]">
-                {contacts.length > 0 ? (
-                  contacts.map((contact) => {
-                    const statusColors = getLeadStatusColor(contact.leadStatus);
-                    return (
-                    <div key={contact.id} className={`p-3 bg-white rounded-lg border border-slate-200 shadow-sm hover-lift hover:shadow-md transition-all duration-300 ${statusColors.bg} border-l-4`}>
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <h3 className="font-medium text-slate-900 mb-1 text-sm">{contact.name}</h3>
-                          <p className="text-xs text-slate-600 mb-2">{contact.company}</p>
-                          <div className="flex items-center gap-2">
-                            <span className={`text-xs px-2 py-1 rounded-full font-medium border ${statusColors.badge} ${statusColors.text}`}>
-                              {contact.leadStatus}
-                            </span>
-                            <span className="text-xs text-slate-400">
-                              {contact._count.activities} activities
-                            </span>
+            )}
+            
+            <div className={`transition-all duration-300 ${
+              isTransitioning ? 'opacity-50 scale-95' : 'opacity-100 scale-100'
+            }`}>
+              {viewMode === 'dashboard' ? (
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 min-h-[calc(100vh-400px)] animate-fadeIn">
+                  {/* Left Column - Contacts */}
+                  <div className="lg:col-span-3 card flex flex-col h-full">
+                    <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+                      <h2 className="text-xl font-bold text-slate-900 flex items-center">
+                        <div className="w-4 h-4 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full mr-3 shadow-sm"></div>
+                        Contacts
+                      </h2>
+                      <span className="text-sm bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-1.5 rounded-full font-semibold shadow-sm">
+                        {contacts.length}
+                      </span>
+                    </div>
+                    <div className="flex-1 space-y-4 scroll-area overflow-y-auto max-h-[600px]">
+                      {contacts.length > 0 ? (
+                        contacts.map((contact) => {
+                          const statusColors = getLeadStatusColor(contact.leadStatus);
+                          return (
+                          <div key={contact.id} className={`p-3 bg-white rounded-lg border border-slate-200 shadow-sm hover-lift hover:shadow-md transition-all duration-300 ${statusColors.bg} border-l-4`}>
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <h3 className="font-medium text-slate-900 mb-1 text-sm">{contact.name}</h3>
+                                <p className="text-xs text-slate-600 mb-2">{contact.company}</p>
+                                <div className="flex items-center gap-2">
+                                  <span className={`text-xs px-2 py-1 rounded-full font-medium border ${statusColors.badge} ${statusColors.text}`}>
+                                    {contact.leadStatus}
+                                  </span>
+                                  <span className="text-xs text-slate-400">
+                                    {contact._count.activities} activities
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                    </div>
-                    );
-                  })
-                ) : (
-                  <div className="text-center py-12 text-slate-500">
-                    <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <div className="w-8 h-8 bg-blue-200 rounded-full"></div>
-                    </div>
-                    <p className="text-lg font-medium mb-2">No contacts yet</p>
-                    <p className="text-sm text-slate-400 mb-4">Start building your network</p>
-                    {isContributor && (
-                      <button className="btn-primary hover-lift">
-                        Add First Contact
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Middle Column - Activity Feed - PROMINENT */}
-            <div className="md:col-span-2 lg:col-span-6 flex flex-col h-full">
-              <div className="card">
-                <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
-                  <h2 className="text-3xl font-bold text-slate-900 flex items-center">
-                    <div className="w-5 h-5 bg-gradient-to-r from-primary-400 to-primary-600 rounded-full mr-4 shadow-sm"></div>
-                    Activity Feed
-                  </h2>
-                  <span className="text-sm bg-gradient-to-r from-primary-500 to-primary-600 text-white px-4 py-2 rounded-full font-semibold shadow-sm">
-                    {activities.length}
-                  </span>
-                </div>
-                
-                {/* Quick Activity Composer */}
-                <QuickActivityComposer onActivityCreated={handleActivityCreated} />
-              </div>
-              
-              <div className="card flex-1 mt-6">
-                <div className="flex-1 space-y-6 scroll-area overflow-y-auto max-h-[600px]">
-                {activities.length > 0 ? (
-                  activities.map((activity) => {
-                    const colors = getActivityTypeColor(activity.type);
-                    return (
-                    <div key={activity.id} className={`relative p-6 bg-white rounded-xl border border-slate-200 shadow-sm hover-lift hover:shadow-md transition-all duration-300 ${colors.border} border-l-4`}>
-                      <div className="ml-4">
-                        <div className="flex justify-between items-start mb-3">
-                          <span className={`text-xs font-semibold ${colors.accent} uppercase tracking-wider ${colors.bg} px-2 py-1 rounded-md`}>
-                            {activity.type.replace('_', ' ')}
-                          </span>
-                          <span className="text-xs text-slate-400 font-medium">
-                            {new Date(activity.createdAt).toLocaleDateString()}
-                          </span>
-                        </div>
-                        <ActivityContent 
-                          content={activity.content}
-                          className="text-base text-slate-800 mb-4 leading-loose font-medium"
-                        />
-                        <div className="flex flex-wrap gap-2">
-                          {activity.contact && (
-                            <span className="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-medium">
-                              {activity.contact.name}
-                            </span>
-                          )}
-                          {activity.project && (
-                            <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium">
-                              {activity.project.title}
-                            </span>
+                          );
+                        })
+                      ) : (
+                        <div className="text-center py-12 text-slate-500">
+                          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <div className="w-8 h-8 bg-blue-200 rounded-full"></div>
+                          </div>
+                          <p className="text-lg font-medium mb-2">No contacts yet</p>
+                          <p className="text-sm text-slate-400 mb-4">Start building your network</p>
+                          {isContributor && (
+                            <button className="btn-primary hover-lift">
+                              Add First Contact
+                            </button>
                           )}
                         </div>
-                      </div>
+                      )}
                     </div>
-                    );
-                  })
-                ) : (
-                  <div className="text-center py-12 text-slate-500">
-                    <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <div className="w-8 h-8 bg-primary-200 rounded-full"></div>
-                    </div>
-                    <p className="text-lg font-medium mb-2">No activities yet</p>
-                    <p className="text-sm text-slate-400 mb-4">Start by adding your first update!</p>
-                    {isContributor && (
-                      <button className="btn-primary hover-lift">
-                        Add Update
-                      </button>
-                    )}
                   </div>
-                )}
-                </div>
-              </div>
-            </div>
 
-            {/* Right Column - Projects */}
-            <div className="lg:col-span-3 card flex flex-col h-full">
-              <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
-                <h2 className="text-xl font-bold text-slate-900 flex items-center">
-                  <div className="w-4 h-4 bg-gradient-to-r from-secondary-400 to-secondary-600 rounded-full mr-3 shadow-sm"></div>
-                  Projects
-                </h2>
-                <span className="text-sm bg-gradient-to-r from-secondary-500 to-secondary-600 text-white px-3 py-1.5 rounded-full font-semibold shadow-sm">
-                  {projects.length}
-                </span>
-              </div>
-              <div className="flex-1 space-y-4 scroll-area overflow-y-auto max-h-[600px]">
-                {projects.length > 0 ? (
-                  projects.map((project) => {
-                    const progressGradient = getProjectProgressColor(project.status, project.progress);
-                    return (
-                    <div key={project.id} className="p-3 bg-white rounded-lg border border-slate-200 shadow-sm hover-lift hover:shadow-md transition-all duration-300">
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-medium text-slate-900 flex-1 text-sm">{project.title}</h3>
-                        <span className="text-xs bg-slate-100 text-slate-700 px-2 py-1 rounded-full font-medium ml-2">
-                          {project.status.replace('_', ' ')}
+                  {/* Middle Column - Activity Feed - PROMINENT */}
+                  <div className="md:col-span-2 lg:col-span-6 flex flex-col h-full">
+                    <div className="card">
+                      <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+                        <h2 className="text-3xl font-bold text-slate-900 flex items-center">
+                          <div className="w-5 h-5 bg-gradient-to-r from-primary-400 to-primary-600 rounded-full mr-4 shadow-sm"></div>
+                          Activity Feed
+                        </h2>
+                        <span className="text-sm bg-gradient-to-r from-primary-500 to-primary-600 text-white px-4 py-2 rounded-full font-semibold shadow-sm">
+                          {activities.length}
                         </span>
                       </div>
-                      <div className="mb-2">
-                        <div className="flex justify-between text-xs text-slate-600 mb-1">
-                          <span className="font-medium">{project.progress}% complete</span>
-                          <span className="text-slate-400 font-medium">{project.status === 'COMPLETED' ? 'DONE' : project.status === 'ON_HOLD' ? 'PAUSED' : 'ACTIVE'}</span>
+                      
+                      {/* Quick Activity Composer */}
+                      <QuickActivityComposer onActivityCreated={handleActivityCreated} />
+                    </div>
+                    
+                    <div className="card flex-1 mt-6">
+                      <div className="flex-1 space-y-6 scroll-area overflow-y-auto max-h-[600px]">
+                      {activities.length > 0 ? (
+                        activities.map((activity) => {
+                          const colors = getActivityTypeColor(activity.type);
+                          return (
+                          <div key={activity.id} className={`relative p-6 bg-white rounded-xl border border-slate-200 shadow-sm hover-lift hover:shadow-md transition-all duration-300 ${colors.border} border-l-4`}>
+                            <div className="ml-4">
+                              <div className="flex justify-between items-start mb-3">
+                                <span className={`text-xs font-semibold ${colors.accent} uppercase tracking-wider ${colors.bg} px-2 py-1 rounded-md`}>
+                                  {activity.type.replace('_', ' ')}
+                                </span>
+                                <span className="text-xs text-slate-400 font-medium">
+                                  {new Date(activity.createdAt).toLocaleDateString()}
+                                </span>
+                              </div>
+                              <ActivityContent 
+                                content={activity.content}
+                                className="text-base text-slate-800 mb-4 leading-loose font-medium"
+                              />
+                              <div className="flex flex-wrap gap-2">
+                                {activity.contact && (
+                                  <span className="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-medium">
+                                    {activity.contact.name}
+                                  </span>
+                                )}
+                                {activity.project && (
+                                  <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium">
+                                    {activity.project.title}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          );
+                        })
+                      ) : (
+                        <div className="text-center py-12 text-slate-500">
+                          <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <div className="w-8 h-8 bg-primary-200 rounded-full"></div>
+                          </div>
+                          <p className="text-lg font-medium mb-2">No activities yet</p>
+                          <p className="text-sm text-slate-400 mb-4">Start by adding your first update!</p>
+                          {isContributor && (
+                            <button className="btn-primary hover-lift">
+                              Add Update
+                            </button>
+                          )}
                         </div>
-                        <div className="w-full bg-slate-200 rounded-full h-2 shadow-inner">
-                          <div 
-                            className={`${progressGradient} h-2 rounded-full transition-all duration-700 ease-out shadow-sm`}
-                            style={{ width: `${project.progress}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs text-slate-400">
-                          {project._count.activities} activities
-                        </span>
-                        <div className="flex items-center gap-1">
-                          <div className={`w-1.5 h-1.5 rounded-full ${project.status === 'COMPLETED' ? 'bg-green-400' : project.status === 'ON_HOLD' ? 'bg-amber-400' : 'bg-blue-400'}`}></div>
-                          <span className="text-xs text-slate-600">{project.status === 'COMPLETED' ? 'Done' : project.status === 'ON_HOLD' ? 'Paused' : 'Active'}</span>
-                        </div>
+                      )}
                       </div>
                     </div>
-                    );
-                  })
-                ) : (
-                  <div className="text-center py-12 text-slate-500">
-                    <div className="w-16 h-16 bg-secondary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <div className="w-8 h-8 bg-secondary-200 rounded-full"></div>
-                    </div>
-                    <p className="text-lg font-medium mb-2">No projects yet</p>
-                    <p className="text-sm text-slate-400 mb-4">Create your first project</p>
-                    {isContributor && (
-                      <button className="btn-outline hover-lift">
-                        Add Project
-                      </button>
-                    )}
                   </div>
-                )}
-              </div>
-            </div>
-            </div>
-            ) : viewMode === 'kanban' ? (
-              <div className="min-h-[calc(100vh-400px)] animate-fadeIn">
+
+                  {/* Right Column - Projects */}
+                  <div className="lg:col-span-3 card flex flex-col h-full">
+                    <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+                      <h2 className="text-xl font-bold text-slate-900 flex items-center">
+                        <div className="w-4 h-4 bg-gradient-to-r from-secondary-400 to-secondary-600 rounded-full mr-3 shadow-sm"></div>
+                        Projects
+                      </h2>
+                      <span className="text-sm bg-gradient-to-r from-secondary-500 to-secondary-600 text-white px-3 py-1.5 rounded-full font-semibold shadow-sm">
+                        {projects.length}
+                      </span>
+                    </div>
+                    <div className="flex-1 space-y-4 scroll-area overflow-y-auto max-h-[600px]">
+                      {projects.length > 0 ? (
+                        projects.map((project) => {
+                          const progressGradient = getProjectProgressColor(project.status, project.progress);
+                          return (
+                          <div key={project.id} className="p-3 bg-white rounded-lg border border-slate-200 shadow-sm hover-lift hover:shadow-md transition-all duration-300">
+                            <div className="flex justify-between items-start mb-2">
+                              <h3 className="font-medium text-slate-900 flex-1 text-sm">{project.title}</h3>
+                              <span className="text-xs bg-slate-100 text-slate-700 px-2 py-1 rounded-full font-medium ml-2">
+                                {project.status.replace('_', ' ')}
+                              </span>
+                            </div>
+                            <div className="mb-2">
+                              <div className="flex justify-between text-xs text-slate-600 mb-1">
+                                <span className="font-medium">{project.progress}% complete</span>
+                                <span className="text-slate-400 font-medium">{project.status === 'COMPLETED' ? 'DONE' : project.status === 'ON_HOLD' ? 'PAUSED' : 'ACTIVE'}</span>
+                              </div>
+                              <div className="w-full bg-slate-200 rounded-full h-2 shadow-inner">
+                                <div 
+                                  className={`${progressGradient} h-2 rounded-full transition-all duration-700 ease-out shadow-sm`}
+                                  style={{ width: `${project.progress}%` }}
+                                ></div>
+                              </div>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-xs text-slate-400">
+                                {project._count.activities} activities
+                              </span>
+                              <div className="flex items-center gap-1">
+                                <div className={`w-1.5 h-1.5 rounded-full ${project.status === 'COMPLETED' ? 'bg-green-400' : project.status === 'ON_HOLD' ? 'bg-amber-400' : 'bg-blue-400'}`}></div>
+                                <span className="text-xs text-slate-600">{project.status === 'COMPLETED' ? 'Done' : project.status === 'ON_HOLD' ? 'Paused' : 'Active'}</span>
+                              </div>
+                            </div>
+                          </div>
+                          );
+                        })
+                      ) : (
+                        <div className="text-center py-12 text-slate-500">
+                          <div className="w-16 h-16 bg-secondary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <div className="w-8 h-8 bg-secondary-200 rounded-full"></div>
+                          </div>
+                          <p className="text-lg font-medium mb-2">No projects yet</p>
+                          <p className="text-sm text-slate-400 mb-4">Create your first project</p>
+                          {isContributor && (
+                            <button className="btn-outline hover-lift">
+                              Add Project
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : viewMode === 'kanban' ? (
                 <KanbanBoard 
-                  projects={projects} 
+                  projects={projects}
                   onProjectUpdate={handleProjectUpdate}
                   onProjectCreate={handleProjectCreate}
                   onProjectDelete={handleProjectDelete}
                 />
-              </div>
-            ) : (
-              <ContactsView
-                initialContacts={contacts}
-                onContactUpdate={handleContactUpdate}
-                onContactCreate={handleContactCreate}
-                onContactDelete={handleContactDelete}
-              />
-            )}
+              ) : (
+                <ContactsView
+                  initialContacts={contacts}
+                  onContactUpdate={handleContactUpdate}
+                  onContactCreate={handleContactCreate}
+                  onContactDelete={handleContactDelete}
+                />
+              )}
+            </div>
           </div>
         </>
       )}

@@ -42,6 +42,31 @@ enum ProjectStatus {
   CANCELLED
 }
 
+// Product enum for Carm's Corner
+enum Product {
+  ECHO
+  KALABRIA
+  PHRAMES
+  MAILBRIX
+  PHARMABLOX
+}
+
+// Task priority enum
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+// Response status enum
+enum ResponseStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  NEEDS_INFO
+}
+
 // User model
 model User {
   id            String    @id @default(cuid())
@@ -60,6 +85,8 @@ model User {
   projects      Project[]
   sessions      Session[]
   accounts      Account[]
+  carmTasks     CarmTask[]
+  carmResponses CarmResponse[]
 }
 
 // Activity feed model
@@ -83,6 +110,8 @@ model Activity {
   resource      Resource?    @relation(fields: [resourceId], references: [id], onDelete: SetNull)
   
   comments      Comment[]
+  carmTasks     CarmTask[]
+  productMentions ProductMention[]
   
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
@@ -117,25 +146,47 @@ model Contact {
   @@index([leadStatus])
 }
 
+// Resource type enum
+enum ResourceType {
+  DOCUMENTATION
+  ASSETS
+  TEMPLATES
+  LEGAL
+  UPDATES
+  TRAINING
+  GENERAL
+}
+
 // Resources model
 model Resource {
-  id            String      @id @default(cuid())
+  id            String        @id @default(cuid())
   title         String
   description   String?
-  type          String      // document, link, image, video, etc.
-  url           String?
-  fileData      Json?       // Store file metadata
+  type          ResourceType  @default(GENERAL)
+  product       Product?      // Which product this resource belongs to (null for general)
+  url           String?       // For external links
+  filePath      String?       // For uploaded files
+  fileName      String?       // Original file name
+  fileSize      Int?          // File size in bytes
+  mimeType      String?       // File MIME type
+  version       String?       // Version number (e.g., "1.0", "2.1")
+  tags          Json?         // Array of tags for flexible categorization
+  downloadCount Int           @default(0)
+  lastAccessed  DateTime?
+  isPublic      Boolean       @default(true) // Whether viewers can access
   
   // Relations
   userId        String
-  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   activities    Activity[]
   
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
   
   @@index([userId])
+  @@index([product])
+  @@index([type])
 }
 
 // Projects model
@@ -213,4 +264,68 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+// Carm's Corner - Task model for questions/approvals
+model CarmTask {
+  id            String          @id @default(cuid())
+  title         String
+  description   String
+  product       Product
+  priority      TaskPriority    @default(MEDIUM)
+  dueDate       DateTime?
+  
+  // Relations
+  userId        String
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  activityId    String?
+  activity      Activity?       @relation(fields: [activityId], references: [id], onDelete: SetNull)
+  
+  responses     CarmResponse[]
+  
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  
+  @@index([userId])
+  @@index([product])
+  @@index([priority])
+}
+
+// Carm's response to tasks
+model CarmResponse {
+  id            String          @id @default(cuid())
+  content       String?
+  status        ResponseStatus  @default(PENDING)
+  notes         String?
+  
+  // Relations
+  userId        String
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  taskId        String
+  task          CarmTask        @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  
+  @@index([taskId])
+  @@index([status])
+}
+
+// Track product mentions in activities
+model ProductMention {
+  id            String          @id @default(cuid())
+  product       Product
+  mentionText   String          // The actual text that mentioned the product
+  context       String?         // Surrounding context for better understanding
+  
+  // Relations
+  activityId    String
+  activity      Activity        @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  
+  createdAt     DateTime        @default(now())
+  
+  @@index([activityId])
+  @@index([product])
 }

@@ -1,0 +1,16 @@
+<svg width="150" height="60" viewBox="0 0 150 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="pharmabloxGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#14B8A6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0F766E;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Layered blocks logo -->
+  <rect x="15" y="20" width="12" height="8" fill="url(#pharmabloxGradient)" rx="2"/>
+  <rect x="30" y="16" width="12" height="8" fill="url(#pharmabloxGradient)" rx="2" opacity="0.8"/>
+  <rect x="20" y="32" width="12" height="8" fill="url(#pharmabloxGradient)" rx="2" opacity="0.6"/>
+  <rect x="35" y="28" width="12" height="8" fill="url(#pharmabloxGradient)" rx="2" opacity="0.4"/>
+  <!-- Text -->
+  <text x="55" y="35" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="600" fill="#253A4B">pharmablox</text>
+  <text x="55" y="48" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="400" fill="#8E9AAE">Powered by Hedgehox</text>
+</svg>

@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/config';
 import { prisma } from '@/lib/prisma/client';
 import { NextRequest } from 'next/server';
+import { detectProductMentions } from '@/lib/utils/productMentions';
+import { Product } from '@prisma/client';
 
 export async function GET() {
   try {
@@ -132,6 +134,29 @@ export async function POST(request: NextRequest) {
         },
       },
     });
+
+    // Automatically detect and create product mentions
+    try {
+      const mentions = detectProductMentions(activity.content);
+      if (mentions.length > 0) {
+        // Create product mention records
+        await Promise.all(
+          mentions.map(mention =>
+            prisma.productMention.create({
+              data: {
+                product: mention.product as Product,
+                mentionText: mention.mentionText,
+                context: mention.context,
+                activityId: activity.id,
+              },
+            })
+          )
+        );
+      }
+    } catch (mentionError) {
+      // Log error but don't fail the activity creation
+      console.error('Error creating product mentions:', mentionError);
+    }
 
     return NextResponse.json(activity, { status: 201 });
   } catch (error) {
